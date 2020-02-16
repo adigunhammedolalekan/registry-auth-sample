@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  example-server:
+    build: ./
+    container_name: sample-server
+    restart: on-failure
+    environment:
+      - PORT=5008
+    ports:
+      - 5011:5008
+    volumes:
+      - "./certs:/mnt/certs"
+
+  docker-registry:
+    restart: always
+    image: registry:2
+    ports:
+      - 5010:5000
+    environment:
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/data
+      - REGISTRY_AUTH=token
+      - REGISTRY_AUTH_TOKEN_REALM=https://localhost:5011/auth
+      - REGISTRY_AUTH_TOKEN_SERVICE=Authentication
+      - REGISTRY_AUTH_TOKEN_ISSUER=Sample Issuer
+      - REGISTRY_AUTH_TOKEN_ROOTCERTBUNDLE=/mnt/local/certs/RootCA.crt
+      - REGISTRY_HTTP_TLS_CERTIFICATE=/mnt/local/certs/RootCA.crt
+      - REGISTRY_HTTP_TLS_KEY=/mnt/local/certs/RootCA.key
+    volumes:
+      - "${HOME}/mnt/auth/registry/data:/mnt/registry/data"
+      - "./certs:/mnt/local/certs"
